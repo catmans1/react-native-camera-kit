@@ -4,18 +4,21 @@ export enum CameraType {
 }
 
 export type CodeFormat =
+  | 'aztec'
   | 'code-128'
   | 'code-39'
+  | 'code-39-mod-43'
   | 'code-93'
-  | 'codabar'
+  | 'data-matrix'
   | 'ean-13'
   | 'ean-8'
-  | 'itf'
-  | 'upc-e'
-  | 'qr'
+  | 'interleaved-2-of-5'
+  | 'itf-14'
   | 'pdf-417'
-  | 'aztec'
-  | 'data-matrix'
+  | 'qr'
+  | 'upc-e'
+  | 'codabar'
+  | 'upc-a'
   | 'unknown';
 
 export type TorchMode = 'on' | 'off';
