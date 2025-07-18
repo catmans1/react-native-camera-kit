@@ -8,7 +8,7 @@
 import Foundation
 import AVFoundation
 
-enum CodeFormat: String, CaseIterable {
+enum CodeFormat: String {
     case aztec = "aztec"
     case code128 = "code-128"
     case code39 = "code-39"
@@ -22,9 +22,25 @@ enum CodeFormat: String, CaseIterable {
     case pdf417 = "pdf-417"
     case qr = "qr"
     case upce = "upc-e"
-    case codabar = "codabar"
-    case upca = "upc-a"
     case unknown = "unknown"
+
+    // iOS 15.4+ format
+    @available(iOS 15.4, *)
+    case codabar = "codabar"
+
+    // Custom allCases since CaseIterable isn't allowed with availability restrictions
+    static var allCases: [CodeFormat] {
+        var cases: [CodeFormat] = [
+            .aztec, .code128, .code39, .code39Mod43, .code93, .dataMatrix,
+            .ean13, .ean8, .interleaved2of5, .itf14, .pdf417, .qr, .upce, .unknown
+        ]
+
+        if #available(iOS 15.4, *) {
+            cases.append(.codabar)
+        }
+
+        return cases
+    }
 
     // Convert from AVMetadataObject.ObjectType to CodeFormat
     static func fromAVMetadataObjectType(_ type: AVMetadataObject.ObjectType) -> CodeFormat {
@@ -42,12 +58,11 @@ enum CodeFormat: String, CaseIterable {
         case .pdf417: return .pdf417
         case .qr: return .qr
         case .upce: return .upce
-        // codabar and upca are only available on iOS 15+
-        case .codabar:
-            if #available(iOS 15.0, *) { return .codabar } else { return .unknown }
-        case .upca:
-            if #available(iOS 15.0, *) { return .upca } else { return .unknown }
-        default: return .unknown
+        default:
+            if #available(iOS 15.4, *), type == .codabar {
+                return .codabar
+            }
+            return .unknown
         }
     }
 
@@ -67,12 +82,28 @@ enum CodeFormat: String, CaseIterable {
         case .pdf417: return .pdf417
         case .qr: return .qr
         case .upce: return .upce
-        // codabar and upca are only available on iOS 15+
+        case .unknown:
+            return .code128
         case .codabar:
-            if #available(iOS 15.0, *) { return .codabar } else { return .init(rawValue: "unknown") }
-        case .upca:
-            if #available(iOS 15.0, *) { return .upca } else { return .init(rawValue: "unknown") }
-        case .unknown: return .init(rawValue: "unknown")
+            if #available(iOS 15.4, *) {
+                return .codabar
+            } else {
+                return .code128
+            }
         }
+    }
+
+    // Get supported formats based on iOS version
+    static func getSupportedFormats() -> [CodeFormat] {
+        var formats: [CodeFormat] = [
+            .aztec, .code128, .code39, .code39Mod43, .code93, .dataMatrix,
+            .ean13, .ean8, .interleaved2of5, .itf14, .pdf417, .qr, .upce
+        ]
+
+        if #available(iOS 15.4, *) {
+            formats.append(.codabar)
+        }
+
+        return formats
     }
 }

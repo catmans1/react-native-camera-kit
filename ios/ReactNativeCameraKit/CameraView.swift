@@ -24,7 +24,7 @@ public class CameraView: UIView {
     private var supportedBarcodeType: [CodeFormat] = {
         return CodeFormat.allCases
     }()
-    
+
     // camera
     private var ratioOverlayView: RatioOverlayView?
 
@@ -62,7 +62,7 @@ public class CameraView: UIView {
 
     @objc public var onCaptureButtonPressIn: RCTDirectEventBlock?
     @objc public var onCaptureButtonPressOut: RCTDirectEventBlock?
-    
+
     var eventInteraction: Any? = nil
 
     // MARK: - Setup
@@ -91,6 +91,17 @@ public class CameraView: UIView {
         }
     }
 
+    // Use constraints for FABRIC 0.80.0
+    private func addFullSizeSubview(_ subview: UIView) {
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(subview)
+        NSLayoutConstraint.activate([
+            subview.topAnchor.constraint(equalTo: self.topAnchor),
+            subview.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            subview.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            subview.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+        ])
+    }
 
     // MARK: Lifecycle
 
@@ -123,13 +134,18 @@ public class CameraView: UIView {
         scannerInterfaceView.isHidden = true
 
         addSubview(focusInterfaceView)
+
+        addFullSizeSubview(camera.previewView)
+        addFullSizeSubview(scannerInterfaceView)
+        addFullSizeSubview(focusInterfaceView)
+
         focusInterfaceView.delegate = camera
 
         handleCameraPermission()
-        
+
         configureHardwareInteraction()
     }
-    
+
     private func configureHardwareInteraction() {
         #if !targetEnvironment(macCatalyst)
         // Create a new capture event interaction with a handler that captures a photo.
@@ -161,7 +177,7 @@ public class CameraView: UIView {
         super.reactSetFrame(frame)
         self.updateSubviewsBounds(frame)
     }
-    
+
     @objc public func updateSubviewsBounds(_ frame: CGRect) {
         camera.previewView.frame = bounds
 
@@ -210,7 +226,7 @@ public class CameraView: UIView {
         if changedProps.contains("onZoom") {
             camera.update(onZoom: onZoom)
         }
-        
+
         if changedProps.contains("resizeMode") {
             camera.update(resizeMode: resizeMode)
         }
@@ -250,7 +266,7 @@ public class CameraView: UIView {
                 self.camera.update(scannerFrameSize: self.showFrame ? self.scannerInterfaceView.frameSize : nil)
             }
         }
-        
+
         if changedProps.contains("barcodeFrameSize"), let barcodeFrameSize, showFrame, scanBarcode {
             if let width = barcodeFrameSize["width"] as? CGFloat, let height = barcodeFrameSize["height"] as? CGFloat {
                 scannerInterfaceView.update(frameSize: CGSize(width: width, height: height))
